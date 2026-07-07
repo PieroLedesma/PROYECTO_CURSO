@@ -4,13 +4,9 @@ def apply_custom_css():
     st.markdown("""
         <style>
         /* General Theme Adjustments */
-        .stApp {
-            background-color: #f8f9fa;
-        }
         
         /* Headers styling */
         h1, h2, h3 {
-            color: #1e1e1e;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-weight: 600;
         }
@@ -18,37 +14,32 @@ def apply_custom_css():
         /* Metric styling for Dashboards */
         div[data-testid="stMetricValue"] {
             font-size: 1.8rem;
-            color: #3b82f6;
+            color: var(--primary-color);
             font-weight: 700;
-        }
-        div[data-testid="stMetricLabel"] {
-            font-size: 1rem;
-            color: #6b7280;
-            font-weight: 500;
         }
 
         /* Card-like styling for form and other sections */
         .stForm {
-            background-color: white;
+            background-color: var(--secondary-background-color);
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--faded-text60);
         }
 
         /* Submit Button Styling */
         div[data-testid="stFormSubmitButton"] > button {
-            background-color: #3b82f6;
+            background-color: var(--primary-color);
             color: white;
             font-weight: 600;
             border-radius: 8px;
             border: none;
             width: 100%;
             padding: 10px;
-            transition: background-color 0.3s;
+            transition: opacity 0.3s;
         }
         div[data-testid="stFormSubmitButton"] > button:hover {
-            background-color: #2563eb;
+            opacity: 0.8;
             color: white;
             border: none;
         }
@@ -62,24 +53,7 @@ def apply_custom_css():
         /* Expanders (Acordeones) */
         .streamlit-expanderHeader {
             font-weight: 600;
-            color: #374151;
-            background-color: white;
             border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
-
-        /* Dataframe styling */
-        div[data-testid="stDataFrame"] {
-            background-color: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-
-        /* Sidebar Styling */
-        section[data-testid="stSidebar"] {
-            background-color: #ffffff;
-            border-right: 1px solid #e5e7eb;
         }
 
         /* Hide Streamlit Branding */
