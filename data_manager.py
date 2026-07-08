@@ -42,7 +42,12 @@ def save_eventos(df):
     st.cache_data.clear()
 
 def get_pagos():
-    return _safe_read("Pagos", ["id", "evento_id", "alumno_id", "fecha", "monto", "modo_pago", "comentario"])
+    df = _safe_read("Pagos", ["id", "evento_id", "alumno_id", "fecha", "monto", "modo_pago", "comentario"])
+    if 'modo_pago' not in df.columns:
+        df['modo_pago'] = 'Efectivo'
+    if 'comentario' not in df.columns:
+        df['comentario'] = ''
+    return df
 
 def save_pagos(df):
     conn = get_conn()
