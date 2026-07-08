@@ -113,7 +113,7 @@ def view_evento():
     st.divider()
     
     # Tabs para Formulario y Listas
-    tab1, tab2, tab3 = st.tabs(["💰 Registrar Pago", "✅ Pagados", "❌ Pendientes"])
+    tab1, tab2, tab3, tab4 = st.tabs(["💰 Registrar Pago", "✅ Pagados", "❌ Pendientes", "✏️ Editar Pagos"])
     
     with tab1:
         st.subheader("Nuevo Pago")
@@ -135,12 +135,12 @@ def view_evento():
                 
                 submit_pago = st.form_submit_button("Guardar Información")
                 if submit_pago:
-                    if monto > 0:
+                    if monto >= 0:
                         dm.agregar_pago(evento_id, alumno_id, fecha_pago, monto, modo_pago, comentario)
-                        st.success(f"Pago de {opciones_alumnos[alumno_id]} registrado!")
+                        st.success(f"Registro guardado exitosamente!")
                         st.rerun()
                     else:
-                        st.error("El monto debe ser mayor a 0.")
+                        st.error("El monto no puede ser negativo.")
                         
         st.write("")
         with st.expander("Ver Últimos Pagos Registrados"):
@@ -156,7 +156,7 @@ def view_evento():
                 
     with tab2:
         st.subheader("Alumnos que han Pagado (o Abonado)")
-        pagados_df = resumen[resumen['estado'].isin(['Pagado', 'Abono'])][['nombre', 'monto_pagado', 'estado']]
+        pagados_df = resumen[resumen['estado'].isin(['Pagado', 'Abono'])][['nombre', 'monto_pagado', 'modo_pago', 'estado']]
         if pagados_df.empty:
             st.info("Nadie ha pagado aún.")
         else:
@@ -164,11 +164,47 @@ def view_evento():
             
     with tab3:
         st.subheader("Alumnos Pendientes")
-        pendientes_df = resumen[resumen['estado'] == 'Pendiente'][['nombre']]
+        pendientes_df = resumen[resumen['estado'] == 'Pendiente'][['nombre', 'comentario']]
         if pendientes_df.empty:
             st.success("¡Todos han pagado!")
         else:
             st.dataframe(pendientes_df, use_container_width=True, hide_index=True)
+
+    with tab4:
+        st.subheader("Editar o Eliminar Pagos")
+        pagos = dm.get_pagos()
+        pagos_evento = pagos[pagos['evento_id'] == evento_id]
+        if pagos_evento.empty:
+            st.info("No hay pagos registrados para este evento.")
+        else:
+            pagos_nombres = pd.merge(pagos_evento, alumnos, left_on='alumno_id', right_on='id', how='left')
+            opciones_pagos = {row['id_x']: f"{row['fecha']} - {row['nombre']} - ${row['monto']:,.0f}" for _, row in pagos_nombres.iterrows()}
+            pago_seleccionado = st.selectbox("Selecciona un registro para modificar", options=list(opciones_pagos.keys()), format_func=lambda x: opciones_pagos[x])
+            
+            if pago_seleccionado:
+                pago_data = pagos_evento[pagos_evento['id'] == pago_seleccionado].iloc[0]
+                with st.form("form_editar_pago"):
+                    st.write("Modifica los datos:")
+                    nueva_fecha = st.date_input("Fecha", pd.to_datetime(pago_data['fecha']).date())
+                    nuevo_monto = st.number_input("Monto ($)", min_value=0, step=1000, value=int(pago_data['monto']))
+                    
+                    modos = ["Transferencia", "Efectivo"]
+                    idx_modo = modos.index(pago_data['modo_pago']) if pago_data['modo_pago'] in modos else 0
+                    nuevo_modo = st.selectbox("Modo de Pago", modos, index=idx_modo)
+                    
+                    nuevo_comentario = st.text_input("Comentario", value=str(pago_data['comentario']))
+                    
+                    col_submit, col_delete = st.columns(2)
+                    with col_submit:
+                        if st.form_submit_button("Guardar Cambios"):
+                            dm.editar_pago(pago_seleccionado, nueva_fecha, nuevo_monto, nuevo_modo, nuevo_comentario)
+                            st.success("Registro actualizado!")
+                            st.rerun()
+                    with col_delete:
+                        if st.form_submit_button("Eliminar Registro"):
+                            dm.eliminar_pago(pago_seleccionado)
+                            st.error("Registro eliminado!")
+                            st.rerun()
 
 def view_alumnos():
     if st.button("⬅️ Volver al Inicio"):
